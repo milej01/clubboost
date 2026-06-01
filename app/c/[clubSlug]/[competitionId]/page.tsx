@@ -83,7 +83,8 @@ export default async function PublicCompetitionPage({ params }: { params: Promis
   }
 
   const engine    = getEngine(competition.type)
-  const rules     = engine.explainRulesForParticipant(competition)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rules     = engine.explainRulesForParticipant(competition.config as any)
 
   const fixtures  = competition.type === 'predictor'
     ? await getCompetitionFixtures(competition.id)
