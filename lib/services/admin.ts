@@ -285,7 +285,7 @@ export async function getAdminCompetitions({
   }
 
   const rows: AdminCompetitionRow[] = data.map(c => {
-    const club = c.club as { name: string; slug: string } | null
+    const club = c.club as unknown as { name: string; slug: string } | null
     const count = entryMap[c.id] ?? 0
     return {
       id:              c.id,
@@ -369,8 +369,8 @@ export async function getAdminPaymentsPaginated({ status, q, page = 1 }: GetPaym
   if (!data) return { payments: [], total: 0, totalPages: 0 }
 
   const rows: AdminPaymentRow[] = data.map(p => {
-    const comp    = p.competition as { title: string; club: { name: string } | null } | null
-    const profile = p.profile as { email: string } | null
+    const comp    = p.competition as unknown as unknown as { title: string; club: { name: string } | null } | null
+    const profile = p.profile as unknown as { email: string } | null
     return {
       id:                          p.id,
       created_at:                  p.created_at,
@@ -420,7 +420,7 @@ export async function getAdminAuditLog({ entity_type, q, page = 1 }: GetAuditPar
   if (!data) return { logs: [], total: 0, totalPages: 0 }
 
   const logs: AdminAuditRow[] = data.map(l => {
-    const actor = l.actor as { display_name: string } | null
+    const actor = l.actor as unknown as { display_name: string } | null
     return {
       id:          l.id,
       created_at:  l.created_at,
