@@ -459,7 +459,7 @@ export async function computeEligibleClubs(
       contributionPence:       contributionsByClub[club.id] ?? 0,
     })
 
-    const override = overrideMap.get(club.id) as Record<string, unknown> | undefined
+    const override = overrideMap.get(club.id) as unknown as Record<string, unknown> | undefined
 
     if (override?.is_manually_overridden) {
       return {

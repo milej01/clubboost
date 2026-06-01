@@ -76,7 +76,7 @@ export async function sendNotification<T extends EmailType>(
         notification_type: params.type,
         category:          'marketing',
         subject:           `[skipped] ${params.type}`,
-        template_data:     params.data as Record<string, unknown>,
+        template_data:     params.data as unknown as Record<string, unknown>,
         status:            'skipped',
         provider:          provider.name,
       })
@@ -125,7 +125,7 @@ export async function sendNotification<T extends EmailType>(
       notification_type: params.type,
       category:          isMarketing ? 'marketing' : 'transactional',
       subject:           rendered.subject,
-      template_data:     params.data as Record<string, unknown>,
+      template_data:     params.data as unknown as Record<string, unknown>,
       status:            'pending',
       provider:          provider.name,
     })

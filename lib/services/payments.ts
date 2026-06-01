@@ -280,7 +280,7 @@ export async function handlePaymentSucceeded(params: {
   if (entry) {
     const comp      = (entry as any).competition
     const club      = comp?.club
-    const entryData = (entry.entry_data ?? {}) as Record<string, unknown>
+    const entryData = (entry.entry_data ?? {}) as unknown as Record<string, unknown>
 
     // Build a one-line selection summary from entry_data
     let summary = ''

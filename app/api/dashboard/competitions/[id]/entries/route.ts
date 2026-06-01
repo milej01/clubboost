@@ -56,7 +56,7 @@ export async function GET(
   const rows = entries.map(e => {
     const participant = e.participant as { display_name?: string; email?: string } | null
     const selections  = e.entry_data
-      ? Object.values(e.entry_data as Record<string, unknown>).join(' | ')
+      ? Object.values(e.entry_data as unknown as Record<string, unknown>).join(' | ')
       : ''
     return [
       e.entry_number,

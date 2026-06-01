@@ -168,7 +168,7 @@ export async function updateClub(
   await logAudit({
     actorId, clubId,
     entityType: 'club', entityId: clubId,
-    action: 'club_updated', afterState: data as Record<string, unknown>,
+    action: 'club_updated', afterState: data as unknown as Record<string, unknown>,
   })
 
   return { error: null }

@@ -99,7 +99,7 @@ export default async function ConfirmationPage({
 
   function renderSelections() {
     if (!entry || !competition) return null
-    const data = entry.entry_data as Record<string, unknown>
+    const data = entry.entry_data as unknown as Record<string, unknown>
 
     if (competition.type === 'predictor') {
       const d = data as unknown as PredictorEntryData

@@ -51,7 +51,7 @@ export async function createPendingEntry(params: {
   // Merge rules snapshot into entry_data so the terms accepted at entry time
   // are recorded immutably — even if the competition is later edited.
   const storedData: Record<string, unknown> = {
-    ...(params.entryData as Record<string, unknown>),
+    ...(params.entryData as unknown as Record<string, unknown>),
     ...(params.rulesSnapshot ? { _snapshot: params.rulesSnapshot } : {}),
   }
 
