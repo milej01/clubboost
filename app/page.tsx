@@ -149,8 +149,8 @@ const faqs = [
     a: 'Yes. You can have multiple live competitions at the same time — useful if you have different teams or events running in parallel.',
   },
   {
-    q: 'Is ClubBoost only for football clubs?',
-    a: "We're built for grassroots football right now, but the platform works for any local sports club. Get in touch and we'll help you get set up.",
+    q: 'Does ClubBoost work for all sports?',
+    a: "Yes. ClubBoost works for any sports club — football, rugby, cricket, hockey, netball, and more. If your club has supporters, you can run a fundraiser.",
   },
 ]
 
@@ -173,7 +173,7 @@ export default function HomePage() {
             {/* Pill badge */}
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white px-4 py-1.5 text-sm font-medium text-primary-700 shadow-sm">
               <Zap className="h-3.5 w-3.5" />
-              Fundraising for grassroots football
+              Fundraising for sports clubs
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">
@@ -195,7 +195,7 @@ export default function HomePage() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/how-it-works"
+                href="#how-it-works"
                 className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
               >
                 See how it works
@@ -464,7 +464,7 @@ export default function HomePage() {
               </div>
 
               <div className="mt-6 text-center">
-                <Link href="/pricing" className="text-sm font-medium text-primary-600 hover:underline">
+                <Link href="#pricing" className="text-sm font-medium text-primary-600 hover:underline">
                   See full pricing details →
                 </Link>
               </div>

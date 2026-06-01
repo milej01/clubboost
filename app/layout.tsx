@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: { default: 'ClubBoost', template: '%s | ClubBoost' },
-  description: 'Digital fundraising for grassroots football clubs and local sports teams.',
+  description: 'Digital fundraising for sports clubs. Run competitions, collect entries online, and raise more money from your supporters.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

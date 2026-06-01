@@ -3,16 +3,16 @@ import { Zap, Mail, Twitter, Instagram } from 'lucide-react'
 
 const footerLinks = {
   Product: [
-    { href: '/how-it-works',   label: 'How it works' },
+    { href: '/#how-it-works', label: 'How it works' },
     { href: '/weekly-boost',   label: 'Weekly Boost' },
-    { href: '/pricing',        label: 'Pricing & fees' },
+    { href: '/#pricing',       label: 'Pricing & fees' },
     { href: '/clubs/signup',   label: 'Register your club' },
   ],
   Support: [
     { href: '/help',           label: 'Help centre' },
-    { href: '/help/getting-started', label: 'Getting started' },
-    { href: '/help/payments',  label: 'Payments & payouts' },
-    { href: '/contact',        label: 'Contact us' },
+    { href: '/help',           label: 'Getting started' },
+    { href: '/help',           label: 'Payments & payouts' },
+    { href: 'mailto:hello@clubboost.co.uk', label: 'Contact us' },
   ],
   Legal: [
     { href: '/terms',          label: 'Terms of service' },
@@ -45,7 +45,7 @@ export function SiteFooter() {
               </span>
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
-              Helping grassroots football clubs raise money through fun, fair fundraising competitions.
+              Helping sports clubs raise more money through simple, fair fundraising competitions.
             </p>
             <div className="flex items-center gap-3 mt-5">
               {socialLinks.map(({ href, label, Icon }) => (

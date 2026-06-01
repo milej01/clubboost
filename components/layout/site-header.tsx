@@ -13,9 +13,9 @@ interface NavLink {
 }
 
 const navLinks: NavLink[] = [
-  { href: '/how-it-works',   label: 'How it works' },
+  { href: '/#how-it-works',  label: 'How it works' },
   { href: '/weekly-boost',   label: 'Weekly Boost', badge: 'New' },
-  { href: '/pricing',        label: 'Pricing' },
+  { href: '/#pricing',       label: 'Pricing' },
   { href: '/help',           label: 'Help' },
 ]
 
