@@ -51,7 +51,7 @@ export async function settleCompetitionAction(
 
   // Update points for predictor entries (from finalLeaderboard)
   if (competition.type === 'predictor' && result.data.finalLeaderboard) {
-    for (const row of result.data.finalLeaderboard) {
+    for (const row of result.data.finalLeaderboard.entries) {
       await updateEntryPoints(row.entryId, row.score)
     }
     // Store fixture results
