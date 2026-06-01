@@ -112,7 +112,7 @@ export default async function AdminPayoutsPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {(payouts as PayoutWithRelations[]).map(p => (
+                {(payouts as unknown as PayoutWithRelations[]).map(p => (
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-900">

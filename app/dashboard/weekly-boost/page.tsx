@@ -195,7 +195,7 @@ export default async function DashboardWeeklyBoostPage() {
             <h2 className="font-semibold text-slate-900">Recent contributions</h2>
           </div>
           <div className="divide-y divide-slate-50">
-            {(contributions as Contribution[]).map((c, i) => (
+            {(contributions as unknown as Contribution[]).map((c, i) => (
               <div key={i} className="flex items-center justify-between px-5 py-3">
                 <div>
                   <p className="text-sm text-slate-700">
@@ -218,7 +218,7 @@ export default async function DashboardWeeklyBoostPage() {
             <h2 className="font-semibold text-slate-900">Boost awards</h2>
           </div>
           <div className="divide-y divide-slate-50">
-            {(awards as Award[]).map((a, i) => {
+            {(awards as unknown as Award[]).map((a, i) => {
               const as_ = AWARD_STATUS[a.status] ?? { label: a.status, cls: 'bg-slate-100 text-slate-500' }
               return (
                 <div key={i} className="flex items-center gap-4 px-5 py-3">

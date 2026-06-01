@@ -256,7 +256,7 @@ export default async function AdminClubDetailPage({ params }: PageProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {(members as Member[]).map(m => (
+                {(members as unknown as Member[]).map(m => (
                   <tr key={m.user_id} className="hover:bg-slate-50/50">
                     <td className="px-4 py-3 font-medium text-slate-900">
                       {m.profiles?.display_name ?? '—'}

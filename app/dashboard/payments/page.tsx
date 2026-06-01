@@ -39,10 +39,10 @@ export default async function ClubPaymentsPage() {
   ])
 
   const totalRaisedPence  = (ledgerSummary['club_fundraising_amount']?.debit  ?? 0)
-  const pendingPayoutPence = (payouts as PayoutWithRelations[])
+  const pendingPayoutPence = (payouts as unknown as PayoutWithRelations[])
     .filter(p => ['pending_review', 'processing'].includes(p.status))
     .reduce((s, p) => s + p.amount_pence, 0)
-  const paidOutPence = (payouts as PayoutWithRelations[])
+  const paidOutPence = (payouts as unknown as PayoutWithRelations[])
     .filter(p => p.status === 'paid')
     .reduce((s, p) => s + p.amount_pence, 0)
 
@@ -120,7 +120,7 @@ export default async function ClubPaymentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {(payouts as PayoutWithRelations[]).map(p => (
+                {(payouts as unknown as PayoutWithRelations[]).map(p => (
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 font-medium text-slate-900">
                       {p.competition?.title ?? '—'}

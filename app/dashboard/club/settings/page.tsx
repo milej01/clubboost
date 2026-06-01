@@ -141,7 +141,7 @@ export default async function ClubSettingsPage() {
             <span className="ml-auto text-xs text-slate-400">{members.length} {members.length === 1 ? 'member' : 'members'}</span>
           </div>
           <div className="divide-y divide-slate-50">
-            {(members as Member[]).map(m => (
+            {(members as unknown as Member[]).map(m => (
               <div key={m.user_id} className="flex items-center gap-3 px-6 py-3">
                 <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-semibold text-slate-500">

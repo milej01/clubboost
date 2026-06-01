@@ -176,7 +176,7 @@ export default async function AdminCompetitionDetailPage({ params }: PageProps) 
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {(entries as Entry[]).map(entry => {
+                {(entries as unknown as Entry[]).map(entry => {
                   const es = ENTRY_STATUS[entry.status] ?? { label: entry.status, cls: 'bg-slate-100 text-slate-500' }
                   const selection = entry.entry_data
                     ? Object.values(entry.entry_data).slice(0, 2).join(', ')
@@ -217,7 +217,7 @@ export default async function AdminCompetitionDetailPage({ params }: PageProps) 
             <h2 className="font-semibold text-slate-900">Audit trail</h2>
           </div>
           <div className="divide-y divide-slate-50">
-            {(auditLogs as AuditLog[]).map(log => (
+            {(auditLogs as unknown as AuditLog[]).map(log => (
               <div key={log.id} className="px-5 py-3 flex items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900">{log.action.replace(/_/g, ' ')}</p>
