@@ -4,6 +4,8 @@ type BadgeVariant =
   | 'green' | 'amber' | 'red' | 'slate' | 'blue' | 'purple'
   // Semantic aliases
   | 'success' | 'warning' | 'error' | 'info'
+  // shadcn-style aliases
+  | 'secondary' | 'destructive' | 'outline' | 'default'
 
 const variantClasses: Record<BadgeVariant, string> = {
   green:   'bg-green-100 text-green-800 border-green-200',
@@ -13,10 +15,15 @@ const variantClasses: Record<BadgeVariant, string> = {
   blue:    'bg-blue-100 text-blue-800 border-blue-200',
   purple:  'bg-purple-100 text-purple-800 border-purple-200',
   // Semantic aliases
-  success: 'bg-green-100 text-green-800 border-green-200',
-  warning: 'bg-amber-100 text-amber-800 border-amber-200',
-  error:   'bg-red-100 text-red-800 border-red-200',
-  info:    'bg-blue-100 text-blue-800 border-blue-200',
+  success:     'bg-green-100 text-green-800 border-green-200',
+  warning:     'bg-amber-100 text-amber-800 border-amber-200',
+  error:       'bg-red-100 text-red-800 border-red-200',
+  info:        'bg-blue-100 text-blue-800 border-blue-200',
+  // shadcn-style aliases
+  secondary:   'bg-slate-100 text-slate-700 border-slate-200',
+  destructive: 'bg-red-100 text-red-800 border-red-200',
+  outline:     'bg-transparent text-slate-700 border-slate-300',
+  default:     'bg-slate-100 text-slate-700 border-slate-200',
 }
 
 interface BadgeProps {
