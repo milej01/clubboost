@@ -94,7 +94,7 @@ export async function adminRefundPaymentAction(
   const { user, error: authError } = await requirePlatformAdmin()
   if (authError || !user) return { success: false, error: authError ?? 'Unauthorized' }
 
-  const { error } = await refundPayment(paymentId, reason, user.id)
+  const { error } = await refundPayment({ paymentId, reason, actorId: user.id })
   if (error) return { success: false, error }
 
   revalidatePath('/admin/payments')
