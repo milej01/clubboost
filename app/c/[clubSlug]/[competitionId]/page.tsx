@@ -196,16 +196,18 @@ export default async function PublicCompetitionPage({ params }: { params: Promis
           <div className="space-y-4">
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">How to enter</p>
-              <p className="text-sm text-slate-700 leading-relaxed">{rules.how_to_enter}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{rules.summary}</p>
             </div>
             <div className="border-t border-slate-100 pt-4">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">How the winner is decided</p>
-              <p className="text-sm text-slate-700 leading-relaxed">{rules.how_winner_is_decided}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{rules.howToWin}</p>
             </div>
-            <div className="border-t border-slate-100 pt-4">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">The prize</p>
-              <p className="text-sm text-slate-700 leading-relaxed">{rules.prize_description}</p>
-            </div>
+            {rules.scoring && (
+              <div className="border-t border-slate-100 pt-4">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Scoring</p>
+                <p className="text-sm text-slate-700 leading-relaxed">{rules.scoring}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -261,7 +263,7 @@ export default async function PublicCompetitionPage({ params }: { params: Promis
           <Shield className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-slate-600 space-y-1">
             <p className="font-semibold text-slate-800">Safe &amp; transparent</p>
-            <p>Payments are processed securely by Stripe. {rules.refund_note}</p>
+            <p>Payments are processed securely by Stripe.</p>
             <p className="text-slate-400">This is a fundraising competition, not gambling. Entry fees support {club.name}.</p>
           </div>
         </div>
