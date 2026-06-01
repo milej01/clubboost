@@ -168,7 +168,7 @@ async function dispatch(event: Stripe.Event): Promise<void> {
         await handleRefundWebhook({
           chargeId:       charge.id,
           stripeRefundId: latest.id,
-          status:         latest.status,
+          status:         latest.status ?? 'pending',
         })
       }
       break
@@ -180,7 +180,7 @@ async function dispatch(event: Stripe.Event): Promise<void> {
         await handleRefundWebhook({
           chargeId:       refundObj.charge as string,
           stripeRefundId: refundObj.id,
-          status:         refundObj.status,
+          status:         refundObj.status ?? 'pending',
         })
       }
       break
