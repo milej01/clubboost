@@ -33,7 +33,10 @@ async function BoostWidgetContent({ clubId }: Props) {
 
   if (!enabled) return null
 
-  const recentAwards = summary.recent_awards.slice(0, 3)
+  const recentAwards = (summary.award_history ?? []).slice(0, 3)
+  const totalAwarded = recentAwards
+    .filter(a => a.status === 'paid')
+    .reduce((s, a) => s + a.amount_pence, 0)
 
   return (
     <Card>
@@ -47,22 +50,12 @@ async function BoostWidgetContent({ clubId }: Props) {
         {/* Eligibility this week */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-slate-600">Current eligibility</span>
-          <EligibilityBadge eligible={summary.is_eligible_this_period} />
+          <EligibilityBadge eligible={summary.is_eligible} />
         </div>
 
         {/* Eligibility reason */}
         {summary.eligibility_reason && (
           <p className="text-xs text-slate-500 -mt-2">{summary.eligibility_reason}</p>
-        )}
-
-        {/* This period contribution */}
-        {summary.current_period_contribution_pence !== null && (
-          <div className="flex items-center justify-between py-2 border-t border-slate-100">
-            <span className="text-sm text-slate-600">Your contribution this period</span>
-            <span className="font-semibold text-slate-900">
-              £{(summary.current_period_contribution_pence / 100).toFixed(2)}
-            </span>
-          </div>
         )}
 
         {/* Total contributed all time */}
@@ -74,11 +67,11 @@ async function BoostWidgetContent({ clubId }: Props) {
         </div>
 
         {/* Total awarded */}
-        {summary.total_awarded_pence > 0 && (
+        {totalAwarded > 0 && (
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-600">Total received</span>
             <span className="font-semibold text-green-700">
-              £{(summary.total_awarded_pence / 100).toFixed(2)}
+              £{(totalAwarded / 100).toFixed(2)}
             </span>
           </div>
         )}
