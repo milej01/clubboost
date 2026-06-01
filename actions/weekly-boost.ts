@@ -280,7 +280,7 @@ export async function awardAndPayoutAction(params: {
   const { payout, error: payoutError } = await createPayout({
     competitionId: '00000000-0000-0000-0000-000000000000',   // platform-level
     clubId:        params.clubId,
-    type:          'weekly_boost',
+    payoutType:    'weekly_boost',
     amountPence:   params.amountPence,
     notes:         `Weekly Boost award for period ${params.periodId}. ${params.reason ?? ''}`.trim(),
     initiatedBy:   user.id,
