@@ -7,7 +7,7 @@ import { getClubBySlug } from '@/lib/services/clubs'
 import { getCompetitionWithEntryCount } from '@/lib/services/competitions'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { formatPence } from '@/lib/utils'
-import type { PredictorEntryData, LMSEntryData, TeamCardEntryData, DonationEntryData } from '@/types/app'
+import type { PredictorEntryData, LMSEntryData, DonationEntryData } from '@/types/app'
 
 export const metadata: Metadata = { title: 'Entry confirmed!' }
 
@@ -17,9 +17,8 @@ interface PageParams {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  predictor:         'Score Predictor',
+  predictor:         'Six-Result Predictor',
   last_man_standing: 'Last Man Standing',
-  team_card:         'Team Card',
   donation:          'Donation',
 }
 
@@ -106,13 +105,19 @@ export default async function ConfirmationPage({
       const predictions = d.predictions ?? []
       if (!predictions.length) return null
 
-      const LABEL: Record<string, string> = { H: 'Home Win', D: 'Draw', A: 'Away Win' }
+      // 1 = home win, X = draw, 2 = away win (football pools notation)
+      // Also handles legacy H/D/A values for existing entries
+      const LABEL: Record<string, string> = {
+        '1': '1', 'H': '1',
+        'X': 'X', 'D': 'X',
+        '2': '2', 'A': '2',
+      }
       return (
         <div className="space-y-1.5">
           {predictions.map((p, i) => (
             <div key={p.fixture_id ?? i} className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Match {i + 1}</span>
-              <span className="font-semibold text-slate-900">{LABEL[p.predicted_result] ?? p.predicted_result}</span>
+              <span className="font-bold text-slate-900 text-base">{LABEL[p.predicted_result] ?? p.predicted_result}</span>
             </div>
           ))}
           {(data.tiebreaker_total_goals as number) !== undefined && (
@@ -133,16 +138,6 @@ export default async function ConfirmationPage({
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500">Round 1 pick</span>
           <span className="font-semibold text-slate-900">{pick.team_picked}</span>
-        </div>
-      )
-    }
-
-    if (competition.type === 'team_card') {
-      const d = data as unknown as TeamCardEntryData
-      return (
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-500">Your slot</span>
-          <span className="font-semibold text-slate-900">Slot #{d.slot_number}</span>
         </div>
       )
     }
@@ -218,7 +213,6 @@ export default async function ConfirmationPage({
                 <span>
                   {competition.type === 'predictor' && 'Scores will be matched after all fixtures are played'}
                   {competition.type === 'last_man_standing' && 'You\'ll be notified before each new round opens'}
-                  {competition.type === 'team_card' && 'Your slot is locked in — the winning team will be drawn at close'}
                   {competition.type === 'donation' && `100% of your donation goes straight to ${clubName}`}
                 </span>
               </div>

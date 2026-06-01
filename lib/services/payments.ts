@@ -286,13 +286,12 @@ export async function handlePaymentSucceeded(params: {
     let summary = ''
     if (comp?.type === 'predictor') {
       const preds = (entryData.predictions as Array<{ predicted_result: string }> | undefined) ?? []
-      const labels: Record<string, string> = { H: 'Home Win', D: 'Draw', A: 'Away Win' }
+      // 1/X/2 notation; also handle legacy H/D/A
+      const labels: Record<string, string> = { '1': '1', H: '1', 'X': 'X', D: 'X', '2': '2', A: '2' }
       summary = preds.map((p, i) => `Match ${i + 1}: ${labels[p.predicted_result] ?? p.predicted_result}`).join('\n')
     } else if (comp?.type === 'last_man_standing') {
       const picks = (entryData.picks as Array<{ team_picked: string }> | undefined) ?? []
       summary = picks[0] ? `Round 1: ${picks[0].team_picked}` : ''
-    } else if (comp?.type === 'team_card') {
-      summary = `Slot #${(entryData as any).slot_number ?? '?'}`
     } else if (comp?.type === 'donation') {
       summary = (entryData as any).message ?? ''
     }

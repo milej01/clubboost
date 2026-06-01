@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button'
 import { enterCompetitionAction } from '@/actions/entries'
 import { useRouter } from 'next/navigation'
 import { formatPence, formatDate } from '@/lib/utils'
-import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { Competition, Fixture } from '@/types/app'
 
-type ResultPick = 'H' | 'D' | 'A'
+type ResultPick = '1' | 'X' | '2'
 
 interface PredictorFormProps {
   competition: Competition
@@ -18,17 +17,14 @@ interface PredictorFormProps {
   clubSlug:    string
 }
 
-const RESULT_OPTS: Array<{ value: ResultPick; label: string; shortLabel: string }> = [
-  { value: 'H', label: 'Home Win', shortLabel: 'H' },
-  { value: 'D', label: 'Draw',     shortLabel: 'D' },
-  { value: 'A', label: 'Away Win', shortLabel: 'A' },
+const RESULT_OPTS: Array<{ value: ResultPick; label: string }> = [
+  { value: '1', label: '1' },
+  { value: 'X', label: 'X' },
+  { value: '2', label: '2' },
 ]
 
 export function PredictorForm({ competition, fixtures, clubName }: PredictorFormProps) {
   const [picks,     setPicks]     = useState<Record<string, ResultPick>>({})
-  const [homeScore, setHomeScore] = useState<Record<string, string>>({})
-  const [awayScore, setAwayScore] = useState<Record<string, string>>({})
-  const [scoreOpen, setScoreOpen] = useState<Record<string, boolean>>({})
   const [tiebreaker, setTiebreaker] = useState('')
   const [termsOk,   setTermsOk]   = useState(false)
   const [error,     setError]     = useState<string | null>(null)
@@ -42,10 +38,6 @@ export function PredictorForm({ competition, fixtures, clubName }: PredictorForm
     setPicks(prev => ({ ...prev, [fixtureId]: result }))
   }
 
-  function toggleScore(fixtureId: string) {
-    setScoreOpen(prev => ({ ...prev, [fixtureId]: !prev[fixtureId] }))
-  }
-
   function handleSubmit() {
     if (!allPicked) { setError('Please predict the result of every fixture'); return }
     if (!termsOk)   { setError('Please accept the terms to continue');         return }
@@ -55,8 +47,6 @@ export function PredictorForm({ competition, fixtures, clubName }: PredictorForm
       const predictions = fixtures.map(f => ({
         fixture_id:       f.id,
         predicted_result: picks[f.id],
-        ...(homeScore[f.id] !== undefined && { home_score: Number(homeScore[f.id]) }),
-        ...(awayScore[f.id] !== undefined && { away_score: Number(awayScore[f.id]) }),
       }))
 
       const entryData: Record<string, unknown> = { predictions }
@@ -75,7 +65,6 @@ export function PredictorForm({ competition, fixtures, clubName }: PredictorForm
       <div className="space-y-3">
         {fixtures.map((fixture, i) => {
           const picked = picks[fixture.id]
-          const open   = scoreOpen[fixture.id]
 
           return (
             <div
@@ -101,7 +90,7 @@ export function PredictorForm({ competition, fixtures, clubName }: PredictorForm
                 </div>
               </div>
 
-              {/* H / D / A buttons */}
+              {/* 1 / X / 2 buttons */}
               <div className="px-4 pb-3">
                 <div className="grid grid-cols-3 gap-2">
                   {RESULT_OPTS.map(opt => (
@@ -109,54 +98,17 @@ export function PredictorForm({ competition, fixtures, clubName }: PredictorForm
                       key={opt.value}
                       type="button"
                       onClick={() => setPick(fixture.id, opt.value)}
-                      className={`rounded-lg border py-2 text-sm font-semibold transition-colors ${
+                      title={opt.value === '1' ? 'Home win' : opt.value === 'X' ? 'Draw' : 'Away win'}
+                      className={`rounded-lg border py-2 text-lg font-bold tracking-wide transition-colors ${
                         picked === opt.value
                           ? 'border-primary-500 bg-primary-600 text-white shadow-sm'
                           : 'border-slate-200 text-slate-600 hover:border-primary-300 hover:bg-primary-50'
                       }`}
                     >
-                      <span className="hidden sm:inline">{opt.label}</span>
-                      <span className="sm:hidden">{opt.shortLabel}</span>
+                      {opt.label}
                     </button>
                   ))}
                 </div>
-
-                {/* Optional score prediction */}
-                <button
-                  type="button"
-                  onClick={() => toggleScore(fixture.id)}
-                  className="mt-2 flex items-center gap-1 text-xs text-slate-400 hover:text-primary-600 transition-colors"
-                >
-                  {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                  {open ? 'Hide score prediction' : '+ Add optional score prediction'}
-                </button>
-
-                {open && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      max="20"
-                      placeholder="0"
-                      value={homeScore[fixture.id] ?? ''}
-                      onChange={e => setHomeScore(prev => ({ ...prev, [fixture.id]: e.target.value }))}
-                      className="w-16 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-sm font-semibold text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
-                      aria-label={`${fixture.home_team} score`}
-                    />
-                    <span className="text-slate-400 font-medium">–</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max="20"
-                      placeholder="0"
-                      value={awayScore[fixture.id] ?? ''}
-                      onChange={e => setAwayScore(prev => ({ ...prev, [fixture.id]: e.target.value }))}
-                      className="w-16 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-sm font-semibold text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
-                      aria-label={`${fixture.away_team} score`}
-                    />
-                    <p className="text-xs text-slate-400 flex-1">Optional: exact score</p>
-                  </div>
-                )}
               </div>
             </div>
           )

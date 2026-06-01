@@ -16,7 +16,6 @@ import Link from 'next/link'
 const typeOptions = [
   { value: 'predictor',         label: 'Six-Result Predictor' },
   { value: 'last_man_standing', label: 'Last Man Standing' },
-  { value: 'team_card',         label: 'Football Team Card' },
   { value: 'donation',          label: 'Donation Fundraiser' },
 ]
 

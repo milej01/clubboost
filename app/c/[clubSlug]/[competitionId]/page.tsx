@@ -38,14 +38,12 @@ export async function generateMetadata({ params }: { params: Promise<PageParams>
 const TYPE_LABELS: Record<string, string> = {
   predictor:         'Six-Result Predictor',
   last_man_standing: 'Last Man Standing',
-  team_card:         'Football Team Card',
   donation:          'Donation Fundraiser',
 }
 
 const TYPE_EMOJI: Record<string, string> = {
   predictor:         '⚽',
   last_man_standing: '🏆',
-  team_card:         '🃏',
   donation:          '💚',
 }
 
