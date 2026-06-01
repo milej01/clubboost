@@ -68,6 +68,7 @@ import { lmsEngine }       from './lms'
 import { teamCardEngine }  from './team-card'
 import { donationEngine }  from './donation'
 import type { GameType, GameEngine } from './types'
+import type { CompetitionType }      from '@/types/app'
 
 const engines: Record<GameType, GameEngine> = {
   SIX_RESULT_PREDICTOR: predictorEngine,
@@ -76,8 +77,24 @@ const engines: Record<GameType, GameEngine> = {
   DONATION_ONLY:        donationEngine,
 }
 
-export function getEngine(type: GameType): GameEngine {
-  const engine = engines[type]
+const DB_TYPE_MAP: Record<CompetitionType, GameType> = {
+  predictor:         'SIX_RESULT_PREDICTOR',
+  last_man_standing: 'LAST_MAN_STANDING',
+  team_card:         'FOOTBALL_TEAM_CARD',
+  donation:          'DONATION_ONLY',
+}
+
+export function competitionTypeToGameType(type: CompetitionType): GameType {
+  const gameType = DB_TYPE_MAP[type]
+  if (!gameType) throw new Error(`No game type mapping for competition type: ${type}`)
+  return gameType
+}
+
+export function getEngine(type: GameType | CompetitionType): GameEngine {
+  const gameType = (type in DB_TYPE_MAP)
+    ? DB_TYPE_MAP[type as CompetitionType]
+    : type as GameType
+  const engine = engines[gameType]
   if (!engine) throw new Error(`No game engine registered for type: ${type}`)
   return engine
 }
