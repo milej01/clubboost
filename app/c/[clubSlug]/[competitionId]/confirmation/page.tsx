@@ -102,7 +102,7 @@ export default async function ConfirmationPage({
     const data = entry.entry_data as Record<string, unknown>
 
     if (competition.type === 'predictor') {
-      const d = data as PredictorEntryData
+      const d = data as unknown as PredictorEntryData
       const predictions = d.predictions ?? []
       if (!predictions.length) return null
 
@@ -126,7 +126,7 @@ export default async function ConfirmationPage({
     }
 
     if (competition.type === 'last_man_standing') {
-      const d = data as LMSEntryData
+      const d = data as unknown as LMSEntryData
       const pick = d.picks?.[0]
       if (!pick) return null
       return (
@@ -138,7 +138,7 @@ export default async function ConfirmationPage({
     }
 
     if (competition.type === 'team_card') {
-      const d = data as TeamCardEntryData
+      const d = data as unknown as TeamCardEntryData
       return (
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500">Your slot</span>
@@ -148,7 +148,7 @@ export default async function ConfirmationPage({
     }
 
     if (competition.type === 'donation') {
-      const d = data as DonationEntryData
+      const d = data as unknown as DonationEntryData
       return d.message ? (
         <div className="text-sm">
           <p className="text-slate-500 mb-1">Your message</p>

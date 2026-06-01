@@ -140,7 +140,7 @@ export default async function EnterCompetitionPage({ params }: { params: Promise
       .maybeSingle()
 
     if (prevEntry?.entry_data) {
-      const d = prevEntry.entry_data as LMSEntryData
+      const d = prevEntry.entry_data as unknown as LMSEntryData
       usedTeams = (d.picks ?? []).map(p => p.team_picked)
     }
   }
