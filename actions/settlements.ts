@@ -41,14 +41,18 @@ export async function settleCompetitionAction(
 
   const result = engine.settleCompetition(gameState, resultData)
 
-  if (!result.success) return { success: false, error: result.error }
+  // GameResult uses { ok, data } not { success }
+  if (!result.ok) return { success: false, error: result.error }
 
   const db = createAdminClient()
 
-  // Update points for predictor entries
-  if (competition.type === 'predictor' && result.data.leaderboard) {
-    for (const row of result.data.leaderboard) {
-      await updateEntryPoints(row.entry_id, row.points_total)
+  // Winner is first in the winnerEntryIds array
+  const winnerEntryId = result.data.winnerEntryIds?.[0] ?? null
+
+  // Update points for predictor entries (from finalLeaderboard)
+  if (competition.type === 'predictor' && result.data.finalLeaderboard) {
+    for (const row of result.data.finalLeaderboard) {
+      await updateEntryPoints(row.entryId, row.score)
     }
     // Store fixture results
     const data = resultData as { fixture_results?: Array<{ fixture_id: string; result: 'H' | 'D' | 'A' }> }
@@ -71,9 +75,9 @@ export async function settleCompetitionAction(
     }
   }
 
-  // Mark winner
-  if (result.data.winner_entry_id) {
-    await markEntryAsWinner(result.data.winner_entry_id, user.id)
+  // Mark winner entry
+  if (winnerEntryId) {
+    await markEntryAsWinner(winnerEntryId, user.id)
   }
 
   // Mark competition as settled
@@ -82,17 +86,22 @@ export async function settleCompetitionAction(
     .update({ status: 'settled', settled_at: new Date().toISOString(), settled_by: user.id })
     .eq('id', competitionId)
 
-  // Create payout records (both pending_review; no auto-transfer in MVP)
-  if (result.data.winner_entry_id && result.data.prize_pence > 0) {
+  // Calculate prize pence from competition config
+  const activeEntries = (entries as Array<{ status: string }>).filter(e => e.status === 'active')
+  const prizePence = competition.prize_type === 'fixed'
+    ? competition.prize_pence
+    : Math.floor(activeEntries.length * competition.entry_fee_pence * competition.prize_pct_bps / 10000)
+
+  // Create payout records
+  if (winnerEntryId && prizePence > 0) {
     await initiatePrizePayout({
       competitionId,
-      winnerEntryId: result.data.winner_entry_id,
-      prizePence:    result.data.prize_pence,
-      actorId:       user.id,
+      winnerEntryId,
+      prizePence,
+      actorId: user.id,
     })
   }
 
-  const activeEntries = (entries as Array<{ status: string }>).filter(e => e.status === 'active')
   const clubSharePence = Math.floor(
     activeEntries.length * competition.entry_fee_pence * competition.club_pct_bps / 10000
   )
@@ -112,9 +121,9 @@ export async function settleCompetitionAction(
     entityId:   competitionId,
     action:     'competition_settled',
     afterState: {
-      winner_entry_id: result.data.winner_entry_id,
-      prize_pence:     result.data.prize_pence,
-      notes:           result.data.notes,
+      winner_entry_id: winnerEntryId,
+      prize_pence:     prizePence,
+      details:         result.data.details,
     },
   })
 
@@ -122,9 +131,6 @@ export async function settleCompetitionAction(
 
   return {
     success: true,
-    data: {
-      winnerId:    result.data.winner_entry_id,
-      prizePence:  result.data.prize_pence,
-    },
+    data: { winnerId: winnerEntryId, prizePence },
   }
 }
