@@ -259,15 +259,26 @@ async function recomputePeriodTotal(periodId: string): Promise<void> {
  * that has weekly_boost_contribution_bps > 0 and there's an active period.
  */
 export async function recordPaymentContribution(params: {
-  periodId:       string
+  periodId?:      string   // optional — looks up active period if omitted
   paymentId:      string
   entryId:        string
   clubId:         string
   competitionId:  string
   amountPence:    number
 }): Promise<{ error: string | null }> {
+  // Resolve period: use provided periodId or fall back to the current active period
+  let periodId = params.periodId
+  if (!periodId) {
+    const activePeriod = await getActivePeriod()
+    if (!activePeriod) {
+      // No active period — silently skip (not an error; just no boost period running)
+      return { error: null }
+    }
+    periodId = activePeriod.id
+  }
+
   const { item, error } = await addFundItem({
-    periodId:       params.periodId,
+    periodId,
     sourceType:     'competition_payment',
     amountPence:    params.amountPence,
     clubId:         params.clubId,
