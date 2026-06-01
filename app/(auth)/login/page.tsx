@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,7 +10,7 @@ import { FormField } from '@/components/ui/label'
 import { Alert } from '@/components/ui/alert'
 import { loginAction } from '@/actions/auth'
 
-export default function LoginPage() {
+function LoginForm() {
   const [error, setError]       = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const router       = useRouter()
@@ -30,26 +30,34 @@ export default function LoginPage() {
   }
 
   return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <FormField label="Email" htmlFor="email">
+        <Input id="email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+      </FormField>
+      <FormField label="Password" htmlFor="password">
+        <Input id="password" name="password" type="password" autoComplete="current-password" required placeholder="••••••••" />
+      </FormField>
+
+      {error && <Alert variant="error">{error}</Alert>}
+
+      <Button type="submit" loading={pending} className="w-full" size="lg">
+        Sign in
+      </Button>
+    </form>
+  )
+}
+
+export default function LoginPage() {
+  return (
     <Card>
       <CardHeader>
         <CardTitle>Sign in to ClubBoost</CardTitle>
         <p className="text-sm text-slate-500 mt-1">Welcome back</p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField label="Email" htmlFor="email">
-            <Input id="email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
-          </FormField>
-          <FormField label="Password" htmlFor="password">
-            <Input id="password" name="password" type="password" autoComplete="current-password" required placeholder="••••••••" />
-          </FormField>
-
-          {error && <Alert variant="error">{error}</Alert>}
-
-          <Button type="submit" loading={pending} className="w-full" size="lg">
-            Sign in
-          </Button>
-        </form>
+        <Suspense fallback={<div className="space-y-4 animate-pulse"><div className="h-10 bg-slate-100 rounded" /><div className="h-10 bg-slate-100 rounded" /><div className="h-10 bg-slate-100 rounded" /></div>}>
+          <LoginForm />
+        </Suspense>
 
         <p className="mt-4 text-center text-sm text-slate-500">
           Don&apos;t have an account?{' '}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { useCallback, useTransition } from 'react'
+import { useCallback, useTransition, Suspense } from 'react'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -24,7 +24,7 @@ interface FilterBarProps {
   extras?: React.ReactNode
 }
 
-export function FilterBar({
+function FilterBarInner({
   searchKey   = 'q',
   filterKey   = 'status',
   tabs,
@@ -120,5 +120,13 @@ export function FilterBar({
         </div>
       )}
     </div>
+  )
+}
+
+export function FilterBar(props: FilterBarProps) {
+  return (
+    <Suspense fallback={<div className="h-10 animate-pulse rounded-xl bg-slate-100" />}>
+      <FilterBarInner {...props} />
+    </Suspense>
   )
 }
