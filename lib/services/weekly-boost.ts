@@ -211,20 +211,7 @@ export async function addFundItem(
 
   if (error || !data) return { item: null, error: error?.message ?? 'Failed to add fund item' }
 
-  // Update the period's running total
-  await db.rpc('rpc_boost_increment_pool', {
-    p_period_id:   input.periodId,
-    p_amount_pence: input.amountPence,
-  }).then(() => {
-    // Fallback if RPC not available: direct update with coalesce
-  }).catch(async () => {
-    await db
-      .from('clubboost_weekly_boost_periods')
-      .update({ total_pool_pence: db.rpc as unknown as number })
-      .eq('id', input.periodId)
-  })
-
-  // Simpler approach: recompute total from contributions
+  // Recompute the period's running total from all contributions
   await recomputePeriodTotal(input.periodId)
 
   await logBoostEvent({
