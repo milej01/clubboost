@@ -268,7 +268,8 @@ INSERT INTO public.clubs (
   contact_name, contact_email, contact_phone, description,
   status, stripe_account_id, stripe_onboarded,
   weekly_boost_eligible, weekly_boost_enrolled,
-  platform_fee_bps, created_by
+  approved_by, approved_at,
+  created_by
 ) VALUES
 
   -- Approved club — full Stripe onboarding, boost enrolled
@@ -280,7 +281,9 @@ INSERT INTO public.clubs (
    'We train every Tuesday evening at Hillside Rec and welcome players of all abilities. '
    'Our motto: play hard, stay together.',
    'approved', 'acct_demo_hillside_stripe', TRUE,
-   TRUE, TRUE, 800, CADMIN1_ID),
+   TRUE, TRUE,
+   ADMIN_ID, NOW() - INTERVAL '30 days',
+   CADMIN1_ID),
 
   -- Pending club — applied 3 days ago, no competitions yet
   (NORTHGATE_ID,
@@ -290,7 +293,9 @@ INSERT INTO public.clubs (
    'Northgate United is a newly formed community club looking to get fundraising off the ground. '
    'We field both a men''s and ladies'' team in the Bristol & District League.',
    'pending', NULL, FALSE,
-   FALSE, FALSE, 800, CADMIN2_ID),
+   FALSE, FALSE,
+   NULL, NULL,
+   CADMIN2_ID),
 
   -- Suspended club — stripe onboarded but suspended for non-payment
   (RIVERSIDE_ID,
@@ -299,7 +304,9 @@ INSERT INTO public.clubs (
    'Mike Johnson', 'manager@riverside-sports.demo', '+44 7900 200789',
    'Riverside Sports FC competes in the West Yorkshire League.',
    'suspended', 'acct_demo_riverside_stripe', TRUE,
-   FALSE, FALSE, 800, CADMIN3_ID)
+   FALSE, FALSE,
+   ADMIN_ID, NOW() - INTERVAL '60 days',
+   CADMIN3_ID)
 
 ON CONFLICT (id) DO NOTHING;
 
@@ -318,9 +325,9 @@ ON CONFLICT (club_id, user_id) DO NOTHING;
 -- 4a. Predictor GW37 — settled, Alice won with 6/6
 INSERT INTO public.competitions (
   id, club_id, created_by, type, title, description, rules_text, status,
-  entry_fee_pence, prize_type, prize_pct_bps, prize_pence, prize_description,
+  entry_fee_pence, prize_type, prize_pct_bps, prize_fixed_pence, prize_description,
   club_pct_bps, platform_fee_bps, weekly_boost_contribution_bps,
-  opens_at, closes_at, settled_at, settled_by, terms_accepted, config
+  opens_at, closes_at, settled_at, terms_accepted, config
 ) VALUES (
   PRED_ID, HILLSIDE_ID, CADMIN1_ID,
   'predictor',
@@ -333,7 +340,7 @@ INSERT INTO public.competitions (
   'settled',
   500,                    -- £5.00
   'percentage', 5000,     -- 50% of pot (prize_pct_bps = 5000)
-  0,                      -- prize_pence unused for percentage type
+  NULL,  -- prize_fixed_pence unused for percentage type
   '50% of total entry pot',
   4000,                   -- 40% club
   800,                    -- 8% platform
@@ -341,27 +348,26 @@ INSERT INTO public.competitions (
   '2026-05-08 08:00:00+01',
   '2026-05-17 14:00:00+01',
   '2026-05-20 18:00:00+01',
-  ADMIN_ID,
   TRUE,
   '{"points_per_correct": 1}'::jsonb
 ) ON CONFLICT (id) DO NOTHING;
 
 -- Fixtures (actual_result: H H D A H H)
-INSERT INTO public.fixtures (id, competition_id, fixture_order, home_team, away_team, kickoff_at, actual_result)
+INSERT INTO public.fixtures (id, competition_id, fixture_order, home_team, away_team, kickoff_at, result)
 VALUES
-  (F1_ID, PRED_ID, 0, 'Arsenal',      'Man Utd',        '2026-05-17 12:30:00+01', 'H'),
-  (F2_ID, PRED_ID, 1, 'Liverpool',    'Wolves',          '2026-05-17 15:00:00+01', 'H'),
-  (F3_ID, PRED_ID, 2, 'Chelsea',      'Tottenham',       '2026-05-17 15:00:00+01', 'D'),
-  (F4_ID, PRED_ID, 3, 'Newcastle',    'Bournemouth',     '2026-05-17 15:00:00+01', 'A'),
-  (F5_ID, PRED_ID, 4, 'Aston Villa',  'Brighton',        '2026-05-17 17:30:00+01', 'H'),
-  (F6_ID, PRED_ID, 5, 'Everton',      'Fulham',          '2026-05-17 17:30:00+01', 'H')
+  (F1_ID, PRED_ID, 0, 'Arsenal',      'Man Utd',        '2026-05-17 12:30:00+01', 'home'),
+  (F2_ID, PRED_ID, 1, 'Liverpool',    'Wolves',          '2026-05-17 15:00:00+01', 'home'),
+  (F3_ID, PRED_ID, 2, 'Chelsea',      'Tottenham',       '2026-05-17 15:00:00+01', 'draw'),
+  (F4_ID, PRED_ID, 3, 'Newcastle',    'Bournemouth',     '2026-05-17 15:00:00+01', 'away'),
+  (F5_ID, PRED_ID, 4, 'Aston Villa',  'Brighton',        '2026-05-17 17:30:00+01', 'home'),
+  (F6_ID, PRED_ID, 5, 'Everton',      'Fulham',          '2026-05-17 17:30:00+01', 'home')
 ON CONFLICT (id) DO NOTHING;
 
 
 -- 4b. Last Man Standing 2025-26 — open, round 4 in progress
 INSERT INTO public.competitions (
   id, club_id, created_by, type, title, description, rules_text, status,
-  entry_fee_pence, prize_type, prize_pct_bps, prize_pence, prize_description,
+  entry_fee_pence, prize_type, prize_pct_bps, prize_fixed_pence, prize_description,
   club_pct_bps, platform_fee_bps, weekly_boost_contribution_bps,
   opens_at, closes_at, terms_accepted, config
 ) VALUES (
@@ -377,7 +383,7 @@ INSERT INTO public.competitions (
   'open',
   1000,                   -- £10.00
   'percentage', 6000,     -- 60% of pot
-  0,
+  NULL,
   '60% of total entry pot',
   3000,                   -- 30% club
   800,                    -- 8% platform
@@ -426,7 +432,7 @@ ON CONFLICT (competition_id, round_number) DO NOTHING;
 -- 4c. End of Season Team Card — open, 20 slots
 INSERT INTO public.competitions (
   id, club_id, created_by, type, title, description, rules_text, status,
-  entry_fee_pence, prize_type, prize_pct_bps, prize_pence, prize_description,
+  entry_fee_pence, prize_type, prize_pct_bps, prize_fixed_pence, prize_description,
   club_pct_bps, platform_fee_bps, weekly_boost_contribution_bps,
   opens_at, closes_at, terms_accepted, config
 ) VALUES (
@@ -441,7 +447,7 @@ INSERT INTO public.competitions (
   '48 hours of the final Premier League fixtures.',
   'open',
   500,                    -- £5.00
-  'description', 0, 0,
+  'description', NULL, NULL,
   '£25 Hillside FC club shop voucher for the holder of the winning team slot',
   9000,                   -- 90% club (prize is club-funded)
   800,                    -- 8% platform
@@ -481,7 +487,7 @@ ON CONFLICT (competition_id, slot_number) DO NOTHING;
 -- 4d. New Changing Rooms Fund — donation, open
 INSERT INTO public.competitions (
   id, club_id, created_by, type, title, description, rules_text, status,
-  entry_fee_pence, prize_type, prize_pct_bps, prize_pence, prize_description,
+  entry_fee_pence, prize_type, prize_pct_bps, prize_fixed_pence, prize_description,
   club_pct_bps, platform_fee_bps, weekly_boost_contribution_bps,
   opens_at, closes_at, terms_accepted, config
 ) VALUES (
@@ -496,7 +502,7 @@ INSERT INTO public.competitions (
   'No prize. 100% community fundraising.',
   'open',
   500,                    -- minimum donation £5.00
-  'none', 0, 0, NULL,
+  'none', NULL, NULL, NULL,
   9200,                   -- 92% to club
   800,                    -- 8% platform
   0,                      -- no boost contribution for donation type
@@ -524,42 +530,42 @@ INSERT INTO public.entries (
 ) VALUES
   (EP_ALICE_ID, PRED_ID, ALICE_ID, 1, 'winner',
    jsonb_build_object('predictions', jsonb_build_array(
-     jsonb_build_object('fixture_id', F1_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F2_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F3_ID, 'predicted_result', 'D'),
-     jsonb_build_object('fixture_id', F4_ID, 'predicted_result', 'A'),
-     jsonb_build_object('fixture_id', F5_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F6_ID, 'predicted_result', 'H')
+     jsonb_build_object('fixture_id', F1_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F2_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F3_ID, 'predicted_result', 'draw'),
+     jsonb_build_object('fixture_id', F4_ID, 'predicted_result', 'away'),
+     jsonb_build_object('fixture_id', F5_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F6_ID, 'predicted_result', 'home')
    )), 6, '2026-05-08 09:12:00+01'),
 
   (EP_BOB_ID, PRED_ID, BOB_ID, 2, 'active',
    jsonb_build_object('predictions', jsonb_build_array(
-     jsonb_build_object('fixture_id', F1_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F2_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F3_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F4_ID, 'predicted_result', 'A'),
-     jsonb_build_object('fixture_id', F5_ID, 'predicted_result', 'D'),
-     jsonb_build_object('fixture_id', F6_ID, 'predicted_result', 'H')
+     jsonb_build_object('fixture_id', F1_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F2_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F3_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F4_ID, 'predicted_result', 'away'),
+     jsonb_build_object('fixture_id', F5_ID, 'predicted_result', 'draw'),
+     jsonb_build_object('fixture_id', F6_ID, 'predicted_result', 'home')
    )), 4, '2026-05-08 10:30:00+01'),
 
   (EP_CHARLIE_ID, PRED_ID, CHARLIE_ID, 3, 'active',
    jsonb_build_object('predictions', jsonb_build_array(
-     jsonb_build_object('fixture_id', F1_ID, 'predicted_result', 'D'),
-     jsonb_build_object('fixture_id', F2_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F3_ID, 'predicted_result', 'D'),
-     jsonb_build_object('fixture_id', F4_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F5_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F6_ID, 'predicted_result', 'A')
+     jsonb_build_object('fixture_id', F1_ID, 'predicted_result', 'draw'),
+     jsonb_build_object('fixture_id', F2_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F3_ID, 'predicted_result', 'draw'),
+     jsonb_build_object('fixture_id', F4_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F5_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F6_ID, 'predicted_result', 'away')
    )), 3, '2026-05-09 14:22:00+01'),
 
   (EP_DIANA_ID, PRED_ID, DIANA_ID, 4, 'active',
    jsonb_build_object('predictions', jsonb_build_array(
-     jsonb_build_object('fixture_id', F1_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F2_ID, 'predicted_result', 'D'),
-     jsonb_build_object('fixture_id', F3_ID, 'predicted_result', 'D'),
-     jsonb_build_object('fixture_id', F4_ID, 'predicted_result', 'A'),
-     jsonb_build_object('fixture_id', F5_ID, 'predicted_result', 'H'),
-     jsonb_build_object('fixture_id', F6_ID, 'predicted_result', 'A')
+     jsonb_build_object('fixture_id', F1_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F2_ID, 'predicted_result', 'draw'),
+     jsonb_build_object('fixture_id', F3_ID, 'predicted_result', 'draw'),
+     jsonb_build_object('fixture_id', F4_ID, 'predicted_result', 'away'),
+     jsonb_build_object('fixture_id', F5_ID, 'predicted_result', 'home'),
+     jsonb_build_object('fixture_id', F6_ID, 'predicted_result', 'away')
    )), 4, '2026-05-10 08:45:00+01')
 
 ON CONFLICT (competition_id, entry_number) DO NOTHING;
@@ -796,111 +802,111 @@ INSERT INTO public.payment_ledger (
 ) VALUES
 
   -- ── Predictor — Alice ────────────────────────────────────
-  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'entry_gross',                'credit', 500, 'Entry fee — Predictor GW37'),
-  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'platform_service_fee',       'debit',   40, 'Platform service fee (8%)'),
-  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'prize_pool_allocation',      'debit',  250, 'Prize pool allocation (50%)'),
-  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'club_fundraising_amount',   'debit',  200, 'Club fundraising share (40%)'),
-  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'clubboost_weekly_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
+  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'entry_payment',                'credit', 500, 'Entry fee — Predictor GW37'),
+  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'platform_fee',       'debit',   40, 'Platform service fee (8%)'),
+  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'prize_payout',      'debit',  250, 'Prize pool allocation (50%)'),
+  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'club_fundraising',   'debit',  200, 'Club fundraising share (40%)'),
+  (PRED_ID, HILLSIDE_ID, ALICE_ID, PP_ALICE_ID, EP_ALICE_ID, 'weekly_boost_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
 
   -- ── Predictor — Bob ──────────────────────────────────────
-  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'entry_gross',                'credit', 500, 'Entry fee — Predictor GW37'),
-  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'platform_service_fee',       'debit',   40, 'Platform service fee (8%)'),
-  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'prize_pool_allocation',      'debit',  250, 'Prize pool allocation (50%)'),
-  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'club_fundraising_amount',   'debit',  200, 'Club fundraising share (40%)'),
-  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'clubboost_weekly_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
+  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'entry_payment',                'credit', 500, 'Entry fee — Predictor GW37'),
+  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'platform_fee',       'debit',   40, 'Platform service fee (8%)'),
+  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'prize_payout',      'debit',  250, 'Prize pool allocation (50%)'),
+  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'club_fundraising',   'debit',  200, 'Club fundraising share (40%)'),
+  (PRED_ID, HILLSIDE_ID, BOB_ID, PP_BOB_ID, EP_BOB_ID, 'weekly_boost_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
 
   -- ── Predictor — Charlie ───────────────────────────────────
-  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'entry_gross',                'credit', 500, 'Entry fee — Predictor GW37'),
-  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'platform_service_fee',       'debit',   40, 'Platform service fee (8%)'),
-  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'prize_pool_allocation',      'debit',  250, 'Prize pool allocation (50%)'),
-  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'club_fundraising_amount',   'debit',  200, 'Club fundraising share (40%)'),
-  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'clubboost_weekly_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
+  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'entry_payment',                'credit', 500, 'Entry fee — Predictor GW37'),
+  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'platform_fee',       'debit',   40, 'Platform service fee (8%)'),
+  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'prize_payout',      'debit',  250, 'Prize pool allocation (50%)'),
+  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'club_fundraising',   'debit',  200, 'Club fundraising share (40%)'),
+  (PRED_ID, HILLSIDE_ID, CHARLIE_ID, PP_CHARLIE_ID, EP_CHARLIE_ID, 'weekly_boost_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
 
   -- ── Predictor — Diana ─────────────────────────────────────
-  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'entry_gross',                'credit', 500, 'Entry fee — Predictor GW37'),
-  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'platform_service_fee',       'debit',   40, 'Platform service fee (8%)'),
-  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'prize_pool_allocation',      'debit',  250, 'Prize pool allocation (50%)'),
-  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'club_fundraising_amount',   'debit',  200, 'Club fundraising share (40%)'),
-  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'clubboost_weekly_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
+  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'entry_payment',                'credit', 500, 'Entry fee — Predictor GW37'),
+  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'platform_fee',       'debit',   40, 'Platform service fee (8%)'),
+  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'prize_payout',      'debit',  250, 'Prize pool allocation (50%)'),
+  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'club_fundraising',   'debit',  200, 'Club fundraising share (40%)'),
+  (PRED_ID, HILLSIDE_ID, DIANA_ID, PP_DIANA_ID, EP_DIANA_ID, 'weekly_boost_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
 
   -- ── Predictor settlement (prize paid, club share disbursed) ──
   -- Prize pot: 4 × 250p = 1000p → paid to Alice
-  (PRED_ID, HILLSIDE_ID, ALICE_ID, NULL, EP_ALICE_ID, 'payout', 'debit', 1000, 'Prize payout to winner — Alice Thompson'),
+  (PRED_ID, HILLSIDE_ID, ALICE_ID, NULL, EP_ALICE_ID, 'prize_payout', 'debit', 1000, 'Prize payout to winner — Alice Thompson'),
   -- Club fundraising: 4 × 200p = 800p → paid to Hillside FC
-  (PRED_ID, HILLSIDE_ID, NULL, NULL, NULL, 'payout', 'debit', 800, 'Club fundraising payout — Hillside FC'),
+  (PRED_ID, HILLSIDE_ID, NULL, NULL, NULL, 'prize_payout', 'debit', 800, 'Club fundraising payout — Hillside FC'),
 
   -- ── LMS — Alice ───────────────────────────────────────────
-  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'entry_gross',                'credit', 1000, 'Entry fee — Last Man Standing'),
-  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'platform_service_fee',       'debit',    80, 'Platform service fee (8%)'),
-  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'prize_pool_allocation',      'debit',   600, 'Prize pool allocation (60%)'),
-  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'club_fundraising_amount',   'debit',   300, 'Club fundraising share (30%)'),
-  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'clubboost_weekly_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
+  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'entry_payment',                'credit', 1000, 'Entry fee — Last Man Standing'),
+  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'platform_fee',       'debit',    80, 'Platform service fee (8%)'),
+  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'prize_payout',      'debit',   600, 'Prize pool allocation (60%)'),
+  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'club_fundraising',   'debit',   300, 'Club fundraising share (30%)'),
+  (LMS_ID, HILLSIDE_ID, ALICE_ID, PL_ALICE_ID, EL_ALICE_ID, 'weekly_boost_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
 
   -- ── LMS — Bob ─────────────────────────────────────────────
-  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'entry_gross',                'credit', 1000, 'Entry fee — Last Man Standing'),
-  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'platform_service_fee',       'debit',    80, 'Platform service fee (8%)'),
-  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'prize_pool_allocation',      'debit',   600, 'Prize pool allocation (60%)'),
-  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'club_fundraising_amount',   'debit',   300, 'Club fundraising share (30%)'),
-  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'clubboost_weekly_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
+  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'entry_payment',                'credit', 1000, 'Entry fee — Last Man Standing'),
+  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'platform_fee',       'debit',    80, 'Platform service fee (8%)'),
+  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'prize_payout',      'debit',   600, 'Prize pool allocation (60%)'),
+  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'club_fundraising',   'debit',   300, 'Club fundraising share (30%)'),
+  (LMS_ID, HILLSIDE_ID, BOB_ID, PL_BOB_ID, EL_BOB_ID, 'weekly_boost_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
 
   -- ── LMS — Charlie ─────────────────────────────────────────
-  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'entry_gross',                'credit', 1000, 'Entry fee — Last Man Standing'),
-  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'platform_service_fee',       'debit',    80, 'Platform service fee (8%)'),
-  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'prize_pool_allocation',      'debit',   600, 'Prize pool allocation (60%)'),
-  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'club_fundraising_amount',   'debit',   300, 'Club fundraising share (30%)'),
-  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'clubboost_weekly_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
+  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'entry_payment',                'credit', 1000, 'Entry fee — Last Man Standing'),
+  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'platform_fee',       'debit',    80, 'Platform service fee (8%)'),
+  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'prize_payout',      'debit',   600, 'Prize pool allocation (60%)'),
+  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'club_fundraising',   'debit',   300, 'Club fundraising share (30%)'),
+  (LMS_ID, HILLSIDE_ID, CHARLIE_ID, PL_CHARLIE_ID, EL_CHARLIE_ID, 'weekly_boost_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
 
   -- ── LMS — Diana ───────────────────────────────────────────
-  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'entry_gross',                'credit', 1000, 'Entry fee — Last Man Standing'),
-  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'platform_service_fee',       'debit',    80, 'Platform service fee (8%)'),
-  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'prize_pool_allocation',      'debit',   600, 'Prize pool allocation (60%)'),
-  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'club_fundraising_amount',   'debit',   300, 'Club fundraising share (30%)'),
-  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'clubboost_weekly_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
+  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'entry_payment',                'credit', 1000, 'Entry fee — Last Man Standing'),
+  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'platform_fee',       'debit',    80, 'Platform service fee (8%)'),
+  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'prize_payout',      'debit',   600, 'Prize pool allocation (60%)'),
+  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'club_fundraising',   'debit',   300, 'Club fundraising share (30%)'),
+  (LMS_ID, HILLSIDE_ID, DIANA_ID, PL_DIANA_ID, EL_DIANA_ID, 'weekly_boost_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
 
   -- ── LMS — Eddie ───────────────────────────────────────────
-  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'entry_gross',                'credit', 1000, 'Entry fee — Last Man Standing'),
-  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'platform_service_fee',       'debit',    80, 'Platform service fee (8%)'),
-  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'prize_pool_allocation',      'debit',   600, 'Prize pool allocation (60%)'),
-  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'club_fundraising_amount',   'debit',   300, 'Club fundraising share (30%)'),
-  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'clubboost_weekly_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
+  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'entry_payment',                'credit', 1000, 'Entry fee — Last Man Standing'),
+  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'platform_fee',       'debit',    80, 'Platform service fee (8%)'),
+  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'prize_payout',      'debit',   600, 'Prize pool allocation (60%)'),
+  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'club_fundraising',   'debit',   300, 'Club fundraising share (30%)'),
+  (LMS_ID, HILLSIDE_ID, EDDIE_ID, PL_EDDIE_ID, EL_EDDIE_ID, 'weekly_boost_contribution','debit',  20, 'Weekly Boost contribution (2%)'),
 
   -- ── Team Card — Alice ──────────────────────────────────────
-  (CARD_ID, HILLSIDE_ID, ALICE_ID, PC_ALICE_ID, EC_ALICE_ID, 'entry_gross',               'credit', 500, 'Entry fee — Team Card Draw'),
-  (CARD_ID, HILLSIDE_ID, ALICE_ID, PC_ALICE_ID, EC_ALICE_ID, 'platform_service_fee',      'debit',   40, 'Platform service fee (8%)'),
-  (CARD_ID, HILLSIDE_ID, ALICE_ID, PC_ALICE_ID, EC_ALICE_ID, 'club_fundraising_amount',  'debit',  450, 'Club fundraising share (90%)'),
-  (CARD_ID, HILLSIDE_ID, ALICE_ID, PC_ALICE_ID, EC_ALICE_ID, 'clubboost_weekly_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
+  (CARD_ID, HILLSIDE_ID, ALICE_ID, PC_ALICE_ID, EC_ALICE_ID, 'entry_payment',               'credit', 500, 'Entry fee — Team Card Draw'),
+  (CARD_ID, HILLSIDE_ID, ALICE_ID, PC_ALICE_ID, EC_ALICE_ID, 'platform_fee',      'debit',   40, 'Platform service fee (8%)'),
+  (CARD_ID, HILLSIDE_ID, ALICE_ID, PC_ALICE_ID, EC_ALICE_ID, 'club_fundraising',  'debit',  450, 'Club fundraising share (90%)'),
+  (CARD_ID, HILLSIDE_ID, ALICE_ID, PC_ALICE_ID, EC_ALICE_ID, 'weekly_boost_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
 
   -- ── Team Card — Charlie ────────────────────────────────────
-  (CARD_ID, HILLSIDE_ID, CHARLIE_ID, PC_CHARLIE_ID, EC_CHARLIE_ID, 'entry_gross',               'credit', 500, 'Entry fee — Team Card Draw'),
-  (CARD_ID, HILLSIDE_ID, CHARLIE_ID, PC_CHARLIE_ID, EC_CHARLIE_ID, 'platform_service_fee',      'debit',   40, 'Platform service fee (8%)'),
-  (CARD_ID, HILLSIDE_ID, CHARLIE_ID, PC_CHARLIE_ID, EC_CHARLIE_ID, 'club_fundraising_amount',  'debit',  450, 'Club fundraising share (90%)'),
-  (CARD_ID, HILLSIDE_ID, CHARLIE_ID, PC_CHARLIE_ID, EC_CHARLIE_ID, 'clubboost_weekly_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
+  (CARD_ID, HILLSIDE_ID, CHARLIE_ID, PC_CHARLIE_ID, EC_CHARLIE_ID, 'entry_payment',               'credit', 500, 'Entry fee — Team Card Draw'),
+  (CARD_ID, HILLSIDE_ID, CHARLIE_ID, PC_CHARLIE_ID, EC_CHARLIE_ID, 'platform_fee',      'debit',   40, 'Platform service fee (8%)'),
+  (CARD_ID, HILLSIDE_ID, CHARLIE_ID, PC_CHARLIE_ID, EC_CHARLIE_ID, 'club_fundraising',  'debit',  450, 'Club fundraising share (90%)'),
+  (CARD_ID, HILLSIDE_ID, CHARLIE_ID, PC_CHARLIE_ID, EC_CHARLIE_ID, 'weekly_boost_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
 
   -- ── Team Card — Eddie ──────────────────────────────────────
-  (CARD_ID, HILLSIDE_ID, EDDIE_ID, PC_EDDIE_ID, EC_EDDIE_ID, 'entry_gross',               'credit', 500, 'Entry fee — Team Card Draw'),
-  (CARD_ID, HILLSIDE_ID, EDDIE_ID, PC_EDDIE_ID, EC_EDDIE_ID, 'platform_service_fee',      'debit',   40, 'Platform service fee (8%)'),
-  (CARD_ID, HILLSIDE_ID, EDDIE_ID, PC_EDDIE_ID, EC_EDDIE_ID, 'club_fundraising_amount',  'debit',  450, 'Club fundraising share (90%)'),
-  (CARD_ID, HILLSIDE_ID, EDDIE_ID, PC_EDDIE_ID, EC_EDDIE_ID, 'clubboost_weekly_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
+  (CARD_ID, HILLSIDE_ID, EDDIE_ID, PC_EDDIE_ID, EC_EDDIE_ID, 'entry_payment',               'credit', 500, 'Entry fee — Team Card Draw'),
+  (CARD_ID, HILLSIDE_ID, EDDIE_ID, PC_EDDIE_ID, EC_EDDIE_ID, 'platform_fee',      'debit',   40, 'Platform service fee (8%)'),
+  (CARD_ID, HILLSIDE_ID, EDDIE_ID, PC_EDDIE_ID, EC_EDDIE_ID, 'club_fundraising',  'debit',  450, 'Club fundraising share (90%)'),
+  (CARD_ID, HILLSIDE_ID, EDDIE_ID, PC_EDDIE_ID, EC_EDDIE_ID, 'weekly_boost_contribution','debit', 10, 'Weekly Boost contribution (2%)'),
 
   -- ── Donation — Alice ───────────────────────────────────────
-  (DONA_ID, HILLSIDE_ID, ALICE_ID, PD_ALICE_ID, ED_ALICE_ID, 'donation_gross',            'credit', 500, 'Donation — Changing Rooms Fund'),
-  (DONA_ID, HILLSIDE_ID, ALICE_ID, PD_ALICE_ID, ED_ALICE_ID, 'platform_service_fee',      'debit',   40, 'Platform service fee (8%)'),
-  (DONA_ID, HILLSIDE_ID, ALICE_ID, PD_ALICE_ID, ED_ALICE_ID, 'club_fundraising_amount',  'debit',  460, 'Club fundraising share (92%)'),
+  (DONA_ID, HILLSIDE_ID, ALICE_ID, PD_ALICE_ID, ED_ALICE_ID, 'entry_payment',            'credit', 500, 'Donation — Changing Rooms Fund'),
+  (DONA_ID, HILLSIDE_ID, ALICE_ID, PD_ALICE_ID, ED_ALICE_ID, 'platform_fee',      'debit',   40, 'Platform service fee (8%)'),
+  (DONA_ID, HILLSIDE_ID, ALICE_ID, PD_ALICE_ID, ED_ALICE_ID, 'club_fundraising',  'debit',  460, 'Club fundraising share (92%)'),
 
   -- ── Donation — Bob ─────────────────────────────────────────
-  (DONA_ID, HILLSIDE_ID, BOB_ID, PD_BOB_ID, ED_BOB_ID, 'donation_gross',            'credit', 500, 'Donation — Changing Rooms Fund'),
-  (DONA_ID, HILLSIDE_ID, BOB_ID, PD_BOB_ID, ED_BOB_ID, 'platform_service_fee',      'debit',   40, 'Platform service fee (8%)'),
-  (DONA_ID, HILLSIDE_ID, BOB_ID, PD_BOB_ID, ED_BOB_ID, 'club_fundraising_amount',  'debit',  460, 'Club fundraising share (92%)'),
+  (DONA_ID, HILLSIDE_ID, BOB_ID, PD_BOB_ID, ED_BOB_ID, 'entry_payment',            'credit', 500, 'Donation — Changing Rooms Fund'),
+  (DONA_ID, HILLSIDE_ID, BOB_ID, PD_BOB_ID, ED_BOB_ID, 'platform_fee',      'debit',   40, 'Platform service fee (8%)'),
+  (DONA_ID, HILLSIDE_ID, BOB_ID, PD_BOB_ID, ED_BOB_ID, 'club_fundraising',  'debit',  460, 'Club fundraising share (92%)'),
 
   -- ── Donation — Charlie ─────────────────────────────────────
-  (DONA_ID, HILLSIDE_ID, CHARLIE_ID, PD_CHARLIE_ID, ED_CHARLIE_ID, 'donation_gross',            'credit', 500, 'Donation — Changing Rooms Fund'),
-  (DONA_ID, HILLSIDE_ID, CHARLIE_ID, PD_CHARLIE_ID, ED_CHARLIE_ID, 'platform_service_fee',      'debit',   40, 'Platform service fee (8%)'),
-  (DONA_ID, HILLSIDE_ID, CHARLIE_ID, PD_CHARLIE_ID, ED_CHARLIE_ID, 'club_fundraising_amount',  'debit',  460, 'Club fundraising share (92%)'),
+  (DONA_ID, HILLSIDE_ID, CHARLIE_ID, PD_CHARLIE_ID, ED_CHARLIE_ID, 'entry_payment',            'credit', 500, 'Donation — Changing Rooms Fund'),
+  (DONA_ID, HILLSIDE_ID, CHARLIE_ID, PD_CHARLIE_ID, ED_CHARLIE_ID, 'platform_fee',      'debit',   40, 'Platform service fee (8%)'),
+  (DONA_ID, HILLSIDE_ID, CHARLIE_ID, PD_CHARLIE_ID, ED_CHARLIE_ID, 'club_fundraising',  'debit',  460, 'Club fundraising share (92%)'),
 
   -- ── Donation — Diana ───────────────────────────────────────
-  (DONA_ID, HILLSIDE_ID, DIANA_ID, PD_DIANA_ID, ED_DIANA_ID, 'donation_gross',            'credit', 500, 'Donation — Changing Rooms Fund'),
-  (DONA_ID, HILLSIDE_ID, DIANA_ID, PD_DIANA_ID, ED_DIANA_ID, 'platform_service_fee',      'debit',   40, 'Platform service fee (8%)'),
-  (DONA_ID, HILLSIDE_ID, DIANA_ID, PD_DIANA_ID, ED_DIANA_ID, 'club_fundraising_amount',  'debit',  460, 'Club fundraising share (92%)')
+  (DONA_ID, HILLSIDE_ID, DIANA_ID, PD_DIANA_ID, ED_DIANA_ID, 'entry_payment',            'credit', 500, 'Donation — Changing Rooms Fund'),
+  (DONA_ID, HILLSIDE_ID, DIANA_ID, PD_DIANA_ID, ED_DIANA_ID, 'platform_fee',      'debit',   40, 'Platform service fee (8%)'),
+  (DONA_ID, HILLSIDE_ID, DIANA_ID, PD_DIANA_ID, ED_DIANA_ID, 'club_fundraising',  'debit',  460, 'Club fundraising share (92%)')
 ;
 
 
@@ -1096,13 +1102,13 @@ INSERT INTO public.audit_log (
    '{"amount_pence":1000,"user":"Alice Thompson"}'::jsonb),
 
   -- Payout
-  (ADMIN_ID, HILLSIDE_ID, 'payout', POUT_PRIZE_ID, 'payout_paid',
+  (ADMIN_ID, HILLSIDE_ID, 'prize_payout', POUT_PRIZE_ID, 'payout_paid',
    '{"amount_pence":1000,"recipient":"Alice Thompson","reference":"HILL-PRED-GW37-PRIZE"}'::jsonb),
-  (ADMIN_ID, HILLSIDE_ID, 'payout', POUT_CLUB_ID,  'payout_paid',
+  (ADMIN_ID, HILLSIDE_ID, 'prize_payout', POUT_CLUB_ID,  'payout_paid',
    '{"amount_pence":800,"recipient":"Hillside FC","reference":"HILL-PRED-GW37-CLUB"}'::jsonb),
 
   -- Weekly Boost
-  (ADMIN_ID, HILLSIDE_ID, 'weekly_boost', BOOST_A1_ID, 'boost_awarded',
+  (ADMIN_ID, HILLSIDE_ID, 'weekly_boost_contribution', BOOST_A1_ID, 'boost_awarded',
    '{"period":"Week of 5 May 2026","amount_pence":2500,"club":"Hillside FC"}'::jsonb)
 ;
 
