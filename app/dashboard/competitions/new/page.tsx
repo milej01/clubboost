@@ -23,9 +23,7 @@ export default async function NewCompetitionPage() {
             ? 'You need to create a club before you can run a competition.'
             : 'Your club is pending approval. You can create competitions once a platform admin has approved your club.'}
         </Alert>
-        <Button asChild variant="secondary">
-          <Link href="/dashboard">Back to dashboard</Link>
-        </Button>
+        <Link href="/dashboard" className="btn-secondary inline-flex items-center justify-center">Back to dashboard</Link>
       </div>
     )
   }

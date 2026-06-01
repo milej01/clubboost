@@ -284,9 +284,7 @@ export function NewCompetitionForm({ clubId }: { clubId: string }) {
 
         <div className="flex gap-3">
           <Button type="submit" loading={pending} size="lg">Save as draft</Button>
-          <Button type="button" variant="secondary" size="lg" asChild>
-            <Link href="/dashboard">Cancel</Link>
-          </Button>
+          <Link href="/dashboard" className="btn-secondary inline-flex items-center justify-center px-6 py-3 text-base">Cancel</Link>
         </div>
       </form>
     </div>
