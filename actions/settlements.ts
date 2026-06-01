@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCompetitionById, getCompetitionEntries, updateFixtureResult } from '@/lib/services/competitions'
 import { markEntryAsWinner, updateEntryPoints } from '@/lib/services/entries'
 import { initiatePrizePayout, initiateClubPayout } from '@/lib/services/payouts'
-import { getEngine } from '@/lib/game-engine'
+import { getEngine, competitionTypeToGameType } from '@/lib/game-engine'
 import { logAudit } from '@/lib/services/audit'
 import type { ActionResult } from '@/types/app'
 import { revalidatePath } from 'next/cache'
@@ -22,10 +22,24 @@ export async function settleCompetitionAction(
   if (!competition) return { success: false, error: 'Competition not found' }
   if (competition.status !== 'closed') return { success: false, error: 'Competition must be closed before settling' }
 
-  const entries = await getCompetitionEntries(competitionId) as Parameters<typeof getEngine>[0] extends string ? never : ReturnType<typeof getCompetitionEntries> extends Promise<infer T> ? T : never[]
+  const entries = await getCompetitionEntries(competitionId)
+  const engine  = getEngine(competition.type)
 
-  const engine = getEngine(competition.type)
-  const result = engine.settleCompetition(competition, entries as Parameters<typeof engine.settleCompetition>[1], resultData)
+  // Build a GameState from the DB competition + entries for the engine
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const gameState: any = {
+    type:             competitionTypeToGameType(competition.type),
+    config:           competition.config,
+    entries,
+    status:           competition.status,
+    // LMS-specific
+    currentRound:     (competition.config as Record<string, unknown>)?.current_round ?? 1,
+    roundResults:     (competition.config as Record<string, unknown>)?.round_results  ?? [],
+    // Donation-specific
+    totalRaisedPence: 0,
+  }
+
+  const result = engine.settleCompetition(gameState, resultData)
 
   if (!result.success) return { success: false, error: result.error }
 
