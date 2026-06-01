@@ -108,7 +108,7 @@ export async function markPayoutPaidAction(
   const { user, error: authError } = await requirePlatformAdmin()
   if (authError || !user) return { success: false, error: authError ?? 'Unauthorized' }
 
-  const { error } = await markPayoutPaid(payoutId, user.id, stripeTransferId)
+  const { error } = await markPayoutPaid({ payoutId, actorId: user.id, stripeTransferId })
   if (error) return { success: false, error }
 
   revalidatePath('/admin')
