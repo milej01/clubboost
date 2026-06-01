@@ -215,7 +215,7 @@ export async function retryFailedNotifications(limit = 50): Promise<{
     try {
       rendered = renderEmail(
         notif.notification_type as EmailType,
-        notif.template_data as EmailDataMap[EmailType],
+        notif.template_data as unknown as EmailDataMap[EmailType],
       )
     } catch {
       stillFailing++
