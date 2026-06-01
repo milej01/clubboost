@@ -3,11 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getClubsForUser } from '@/lib/services/clubs'
 import { NewCompetitionForm } from './new-competition-form'
 import { Alert } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 export default async function NewCompetitionPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
