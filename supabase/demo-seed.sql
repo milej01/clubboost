@@ -144,65 +144,80 @@ BEGIN
 -- Only safe to run via service role (supabase db seed / SQL editor).
 -- pgcrypto must be enabled (migration 002 enables it).
 
+-- NOTE: confirmation_token and other token fields must be '' (empty string) not NULL.
+-- GoTrue (Supabase Auth) scans these as Go strings and panics on NULL values.
 INSERT INTO auth.users (
   id, instance_id, aud, role, email,
   encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data,
+  confirmation_token, recovery_token,
+  email_change_token_new, email_change,
+  phone_change, phone_change_token,
+  email_change_token_current, reauthentication_token,
   created_at, updated_at
 ) VALUES
   (ADMIN_ID,   '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'admin@clubboost.demo',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Platform Admin"}'::jsonb, NOW(), NOW()),
+   '{"display_name":"Platform Admin"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW()),
 
   (CADMIN1_ID, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'secretary@hillside-fc.demo',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Tom Bradshaw"}'::jsonb, NOW(), NOW()),
+   '{"display_name":"Tom Bradshaw"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW()),
 
   (CADMIN2_ID, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'admin@northgate-united.demo',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Sarah Chen"}'::jsonb, NOW(), NOW()),
+   '{"display_name":"Sarah Chen"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW()),
 
   (CADMIN3_ID, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'manager@riverside-sports.demo',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Mike Johnson"}'::jsonb, NOW(), NOW()),
+   '{"display_name":"Mike Johnson"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW()),
 
   (ALICE_ID,   '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'alice@demo.clubboost',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Alice Thompson"}'::jsonb, NOW(), NOW()),
+   '{"display_name":"Alice Thompson"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW()),
 
   (BOB_ID,     '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'bob@demo.clubboost',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Bob Hargreaves"}'::jsonb, NOW(), NOW()),
+   '{"display_name":"Bob Hargreaves"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW()),
 
   (CHARLIE_ID, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'charlie@demo.clubboost',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Charlie Osei"}'::jsonb, NOW(), NOW()),
+   '{"display_name":"Charlie Osei"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW()),
 
   (DIANA_ID,   '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'diana@demo.clubboost',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Diana Patel"}'::jsonb, NOW(), NOW()),
+   '{"display_name":"Diana Patel"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW()),
 
   (EDDIE_ID,   '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'eddie@demo.clubboost',
    crypt('Demo1234!', gen_salt('bf')), NOW(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"display_name":"Eddie Mwangi"}'::jsonb, NOW(), NOW())
+   '{"display_name":"Eddie Mwangi"}'::jsonb,
+   '', '', '', '', '', '', '', '', NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -- Auth identities (required for email login)
